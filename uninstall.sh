@@ -76,17 +76,16 @@ uninstall_dependencies() {
 }
 
 uninstall_font() {
-    FONT_NAME="MesloLGS Nerd Font Mono"
-    FONT_DIR="$HOME/.local/share/fonts/$FONT_NAME"
-    
-    if [ -d "$FONT_DIR" ]; then
-        print_colored "$YELLOW" "Removing font: $FONT_NAME"
-        rm -rf "$FONT_DIR"
-        fc-cache -fv
-        print_colored "$GREEN" "Font removed: $FONT_NAME"
-    else
-        print_colored "$YELLOW" "Font not found: $FONT_NAME"
-    fi
+    # Cover the font this fork installs (JetBrainsMono) and the upstream Meslo.
+    for FONT_NAME in "JetBrainsMono Nerd Font" "MesloLGS Nerd Font Mono"; do
+        FONT_DIR="$HOME/.local/share/fonts/$FONT_NAME"
+        if [ -d "$FONT_DIR" ]; then
+            print_colored "$YELLOW" "Removing font: $FONT_NAME"
+            rm -rf "$FONT_DIR"
+        fi
+    done
+    fc-cache -f >/dev/null 2>&1 || true
+    print_colored "$GREEN" "Fonts removed"
 }
 
 uninstall_starship_and_fzf() {
@@ -114,25 +113,58 @@ uninstall_zoxide() {
 
 remove_configs() {
     USER_HOME=$(getent passwd "${SUDO_USER:-$USER}" | cut -d: -f6)
-    
+    BRC="$USER_HOME/.bashrc"
+    MARKER="# >>> mybash loader (managed by setup.sh) >>>"
+
     print_colored "$YELLOW" "Removing configuration files..."
-    
-    # Remove .bashrc symlink and restore backup if it exists
-    if [ -L "$USER_HOME/.bashrc" ]; then
-        rm "$USER_HOME/.bashrc"
-        if [ -f "$USER_HOME/.bashrc.bak" ]; then
-            mv "$USER_HOME/.bashrc.bak" "$USER_HOME/.bashrc"
-            print_colored "$GREEN" "Restored original .bashrc"
+
+    # Restore the original ~/.bashrc. Our setup makes it either a symlink (old
+    # behavior) or a real loader file containing $MARKER; handle both, and pull
+    # the most recent timestamped backup that setup.sh created.
+    if [ -L "$BRC" ] || { [ -f "$BRC" ] && grep -qF "$MARKER" "$BRC" 2>/dev/null; }; then
+        BACKUP=$(ls -1t "$USER_HOME"/.bashrc.bak* 2>/dev/null | head -n1)
+        rm -f "$BRC"
+        if [ -n "$BACKUP" ] && [ -f "$BACKUP" ]; then
+            mv "$BACKUP" "$BRC"
+            print_colored "$GREEN" "Restored original .bashrc from $(basename "$BACKUP")"
+        else
+            print_colored "$YELLOW" "No .bashrc backup found; removed the mybash loader."
         fi
     fi
-    
-    # Remove starship config
+
+    # Keep ~/.bashrc_personal — it holds the user's own settings, not ours.
+    if [ -f "$USER_HOME/.bashrc_personal" ]; then
+        print_colored "$YELLOW" "Kept ~/.bashrc_personal (your custom settings)."
+    fi
+
+    # Remove linked configs and the theme picker (rm -f handles symlink or file).
     rm -f "$USER_HOME/.config/starship.toml"
-    
-    # Remove fastfetch config
     rm -f "$USER_HOME/.config/fastfetch/config.jsonc"
-    
+    rm -f "$USER_HOME/.local/bin/starship-theme"
+
     print_colored "$GREEN" "Configuration files removed"
+}
+
+# Undo the terminal font change setup.sh made (Ptyxis / GNOME Terminal).
+reset_terminal_font() {
+    command_exists gsettings || return 0
+    SCHEMAS=$(gsettings list-schemas 2>/dev/null || true)
+
+    if echo "$SCHEMAS" | grep -q '^org.gnome.Ptyxis$'; then
+        gsettings set org.gnome.Ptyxis use-system-font true 2>/dev/null || true
+        gsettings reset org.gnome.Ptyxis font-name 2>/dev/null || true
+        print_colored "$GREEN" "Reset Ptyxis to the system font"
+    fi
+
+    if echo "$SCHEMAS" | grep -q '^org.gnome.Terminal.ProfilesList$'; then
+        PROFILE=$(gsettings get org.gnome.Terminal.ProfilesList default 2>/dev/null | tr -d "'")
+        if [ -n "$PROFILE" ]; then
+            BASE="org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE/"
+            gsettings set "$BASE" use-system-font true 2>/dev/null || true
+            gsettings reset "$BASE" font 2>/dev/null || true
+            print_colored "$GREEN" "Reset GNOME Terminal to the system font"
+        fi
+    fi
 }
 
 remove_linuxtoolbox() {
@@ -151,6 +183,7 @@ uninstall_font
 uninstall_starship_and_fzf
 uninstall_zoxide
 remove_configs
+reset_terminal_font
 remove_linuxtoolbox
 
 print_colored "$GREEN" "Uninstallation complete. Please restart your shell for changes to take effect."

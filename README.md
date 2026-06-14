@@ -117,20 +117,23 @@ It writes to `~/.config/starship.toml`. If that file is a symlink to the repo,
 To uninstall the `.bashrc` configuration, run:
 
 ```sh
-cd mybash
+cd mybash_fix
 chmod +x uninstall.sh
 ./uninstall.sh
 ```
 
-The `uninstall.sh` script reverses the installation process by:
+The `uninstall.sh` script reverses everything `setup.sh` does:
 
-- Removing installed dependencies
-- Uninstalling fonts
-- Removing symbolic links to configuration files
-- Deleting the `linuxtoolbox` directory
-- Cleaning up additional utilities like `starship`, `fzf`, and `zoxide`
+- Removes installed dependencies, fonts (JetBrainsMono), Starship, fzf, zoxide
+- **Restores your original `~/.bashrc`** from the timestamped backup and removes
+  the mybash loader (handles both the loader file and the older symlink layout)
+- **Keeps `~/.bashrc_personal`** — that's your own config, not ours
+- Removes the linked `starship.toml` / fastfetch config and the `starship-theme`
+  command
+- **Resets your terminal font** (Ptyxis / GNOME Terminal) back to the system font
+- Deletes the `~/linuxtoolbox` clone
 
-After running the script, it's recommended to restart your shell to apply the changes.
+After running the script, restart your shell to apply the changes.
 
 ## Configuration Files
 
