@@ -1,4 +1,11 @@
-# ChrisTitusTech's `.bashrc` Configuration
+# ChrisTitusTech's `.bashrc` Configuration (patched fork)
+
+> **Fork note:** This is a fork of [ChrisTitusTech/mybash](https://github.com/ChrisTitusTech/mybash)
+> with a restored, fixed `setup.sh`. Upstream deleted `setup.sh`, and on modern
+> distros the prompt/fastfetch icons showed up as blank boxes because the
+> installer never told the terminal to use a Nerd Font. This fork fixes that and
+> stops the installer from clobbering your existing `~/.bashrc`. See
+> [What this fork fixes](#what-this-fork-fixes).
 
 ## Overview
 
@@ -6,6 +13,7 @@ This repository provides a comprehensive `.bashrc` configuration along with supp
 
 ## Table of Contents
 
+- [What this fork fixes](#what-this-fork-fixes)
 - [Installation](#installation)
 - [Uninstallation](#uninstallation)
 - [Configuration Files](#configuration-files)
@@ -17,26 +25,50 @@ This repository provides a comprehensive `.bashrc` configuration along with supp
 - [System-Specific Configurations](#system-specific-configurations)
 - [Conclusion](#conclusion)
 
+## What this fork fixes
+
+1. **The terminal font is actually configured.** Upstream installed a Nerd Font
+   but never selected it, so icons rendered as blank boxes. This fork sets the
+   font via `gsettings` for **Ptyxis** (Ubuntu 26.04+ default terminal) and
+   **GNOME Terminal**.
+2. **JetBrainsMono Nerd Font** instead of the cramped `Mono` Meslo variant, so
+   glyphs render at a sensible width.
+3. **Non-destructive bash merge.** Your existing `~/.bashrc` is backed up to
+   `~/.bashrc.bak.<timestamp>`, then `~/.bashrc` becomes a small loader:
+
+   ```sh
+   [ -f ~/linuxtoolbox/mybash/.bashrc ] && . ~/linuxtoolbox/mybash/.bashrc
+   [ -f ~/.bashrc_personal ] && . ~/.bashrc_personal
+   ```
+
+   Put your own settings in **`~/.bashrc_personal`** — it's sourced last, so it
+   overrides mybash and survives re-runs and `git pull`s.
+4. **Safer install:** refuses to run as root, and removes dangling symlinks
+   before relinking (the failure mode that could leave a broken `~/.bashrc`).
+
 ## Installation
 
-To install the `.bashrc` configuration, execute the following commands in your terminal:
+Run as your **normal user** (not with `sudo`):
 
 ```sh
-git clone --depth=1 https://github.com/dacrab/mybash.git
-cd mybash
+git clone https://github.com/joematrix77/mybash_fix.git
+cd mybash_fix
 ./setup.sh
 ```
 
+Then **fully quit your terminal (close all windows) and reopen it** so the new
+font and shell config take effect.
+
 The `setup.sh` script automates the installation process by:
 
-- Creating necessary directories (`linuxtoolbox/mybash`)
-- Cloning the repository
-- Installing dependencies (bash-completion, neovim, starship, fzf, zoxide)
-- Installing the MesloLGS Nerd Font required for the prompt
-- Linking configuration files (`.bashrc` and `starship.toml`) to your home directory
-- Setting up additional utilities like `fastfetch`
+- Creating `~/linuxtoolbox/mybash` and cloning the repository there
+- Installing dependencies (bash-completion, neovim, fastfetch, bat, etc.)
+- Installing **JetBrainsMono Nerd Font**, Starship, fzf, and zoxide
+- Merging `~/.bashrc` (loader + `~/.bashrc_personal`) and linking
+  `starship.toml` and the fastfetch config
+- **Setting your terminal font** to the Nerd Font (Ptyxis / GNOME Terminal)
 
-Ensure you have the required permissions and a supported package manager before running the script.
+Ensure you have a supported package manager and are in the `sudo` group.
 
 ## Uninstallation
 
