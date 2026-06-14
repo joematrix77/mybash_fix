@@ -11,6 +11,10 @@
 
 This repository provides a comprehensive `.bashrc` configuration along with supporting scripts and configuration files to enhance your terminal experience in Unix-like operating systems. It configures the shell session by setting up aliases, defining functions, customizing the prompt, and more, significantly improving the terminal's usability and power.
 
+![Beautiful Bash working prompt](assets/beautifulbash.png)
+
+*The result on Ubuntu 26.04 (Ptyxis): Starship prompt + fastfetch with a Nerd Font, icons rendering correctly.*
+
 ## Table of Contents
 
 - [What this fork fixes](#what-this-fork-fixes)
