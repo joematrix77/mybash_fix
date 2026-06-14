@@ -90,7 +90,11 @@ starship-theme list       # list available palettes
 ```
 
 Starship re-reads its config every prompt, so the change shows on your next
-prompt — no restart needed. Available palettes:
+prompt — no restart needed.
+
+![starship-theme palettes](assets/palettes.png)
+
+Available palettes:
 
 | Palette | Accent |
 |---------|--------|
