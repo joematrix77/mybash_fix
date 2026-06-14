@@ -26,8 +26,11 @@ declare -A THEMES=(
   [manjaro]="123B22 16A085 0E7A5F 35BF5C 0C2D1A 16A085"
   [popos]="2B3539 2C7A85 1F5A63 48B9C7 24414A FAA05A"
   [claude]="2B2A28 C15F3C 8A4A30 D9A87E 6B4232 C15F3C"
+  [kali]="12233A 2777FF 17539E 4D8DFF 0E2A5E 2777FF"
+  [gentoo]="2E2A40 62548E 4A3F73 9B8AC4 39305C 62548E"
+  [dracula]="6272A4 BD93F9 FF79C6 8BE9FD 50FA7B BD93F9"
 )
-ORDER=(ubuntu claude arch fedora debian mint manjaro popos nord)
+ORDER=(ubuntu claude arch fedora debian mint manjaro popos kali gentoo dracula nord)
 
 err() { printf '\033[31m%s\033[0m\n' "$*" >&2; }
 

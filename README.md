@@ -106,6 +106,9 @@ Available palettes:
 | `mint`    | Mint green |
 | `manjaro` | Manjaro green |
 | `popos`   | teal + orange |
+| `kali`    | Kali dragon blue |
+| `gentoo`  | Gentoo purple |
+| `dracula` | Dracula purple / pink / cyan |
 | `nord`    | original theme (revert) |
 
 It writes to `~/.config/starship.toml`. If that file is a symlink to the repo,
