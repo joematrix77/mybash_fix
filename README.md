@@ -19,6 +19,7 @@ This repository provides a comprehensive `.bashrc` configuration along with supp
 
 - [What this fork fixes](#what-this-fork-fixes)
 - [Installation](#installation)
+- [Switching color palettes](#switching-color-palettes)
 - [Uninstallation](#uninstallation)
 - [Configuration Files](#configuration-files)
   - [.bashrc](#bashrc)
@@ -71,8 +72,41 @@ The `setup.sh` script automates the installation process by:
 - Merging `~/.bashrc` (loader + `~/.bashrc_personal`) and linking
   `starship.toml` and the fastfetch config
 - **Setting your terminal font** to the Nerd Font (Ptyxis / GNOME Terminal)
+- Installing the `starship-theme` palette switcher to `~/.local/bin`
 
 Ensure you have a supported package manager and are in the `sudo` group.
+
+## Switching color palettes
+
+The prompt ships with the Nord theme (blue/teal), which reads as Arch/Nordic.
+Use the bundled **`starship-theme`** command to recolor it to your distro — it
+swaps only the 6 segment colors against a pristine base, so the Powerline
+glyphs and layout are always preserved:
+
+```bash
+starship-theme            # interactive picker (fzf if available)
+starship-theme ubuntu     # apply a palette directly
+starship-theme list       # list available palettes
+```
+
+Starship re-reads its config every prompt, so the change shows on your next
+prompt — no restart needed. Available palettes:
+
+| Palette | Accent |
+|---------|--------|
+| `ubuntu`  | orange + aubergine |
+| `claude`  | warm coral / clay |
+| `arch`    | cyan |
+| `fedora`  | Fedora blue |
+| `debian`  | Debian red |
+| `mint`    | Mint green |
+| `manjaro` | Manjaro green |
+| `popos`   | teal + orange |
+| `nord`    | original theme (revert) |
+
+It writes to `~/.config/starship.toml`. If that file is a symlink to the repo,
+`starship-theme` replaces it with your own copy so your colors survive
+`git pull`s.
 
 ## Uninstallation
 

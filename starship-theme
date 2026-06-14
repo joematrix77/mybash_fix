@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+# starship-theme — recolor the mybash Starship prompt with a distro palette.
+# Swaps only the 6 segment colors in a pristine base file, so the Powerline
+# glyphs / layout are always preserved.
+#
+# Usage:
+#   starship-theme            # interactive picker (fzf if available)
+#   starship-theme ubuntu     # apply a palette directly
+#   starship-theme list       # list available palettes
+set -euo pipefail
+
+DEST="${STARSHIP_CONFIG:-$HOME/.config/starship.toml}"
+
+# The 6 Nord "slots" in the upstream mybash starship.toml, in segment order:
+#   1 username/python  2 directory  3 git  4 languages  5 docker  6 time
+SLOTS=(3B4252 434C5E 4C566A 86BBD8 06969A 33658A)
+
+# Palettes: 6 hex colors (no #), same order as SLOTS.
+declare -A THEMES=(
+  [ubuntu]="772953 E95420 77216F 5E2750 772953 E95420"
+  [nord]="3B4252 434C5E 4C566A 86BBD8 06969A 33658A"
+  [arch]="2E3B43 1793D1 0F5E8C 33A4DB 0C4A6E 1793D1"
+  [fedora]="2B3A67 3C6EB4 294172 51A2DA 1D2D52 3C6EB4"
+  [debian]="4A0E22 D70A53 A80030 E0467A 6E0024 D70A53"
+  [mint]="264A20 4E9A06 2E6B08 87CF3E 1C3817 4E9A06"
+  [manjaro]="123B22 16A085 0E7A5F 35BF5C 0C2D1A 16A085"
+  [popos]="2B3539 2C7A85 1F5A63 48B9C7 24414A FAA05A"
+  [claude]="2B2A28 C15F3C 8A4A30 D9A87E 6B4232 C15F3C"
+)
+ORDER=(ubuntu claude arch fedora debian mint manjaro popos nord)
+
+err() { printf '\033[31m%s\033[0m\n' "$*" >&2; }
+
+# Find a pristine base file (one that still contains the Nord slots).
+find_base() {
+  local c
+  for c in "${STARSHIP_THEME_BASE:-}" \
+           "$(dirname "$(readlink -f "$0")")/starship.toml" \
+           "$HOME/build/mybash/starship.toml" \
+           "$HOME/linuxtoolbox/mybash/starship.toml"; do
+    [ -n "$c" ] && [ -f "$c" ] && grep -q "#${SLOTS[0]}" "$c" && { printf '%s' "$c"; return 0; }
+  done
+  return 1
+}
+
+list_themes() {
+  echo "Available palettes:"
+  for t in "${ORDER[@]}"; do printf '  %s\n' "$t"; done
+}
+
+apply_theme() {
+  local name="$1" base cols i
+  if [ -z "${THEMES[$name]+x}" ]; then err "Unknown palette: $name"; list_themes; exit 1; fi
+  base="$(find_base)" || { err "No pristine base starship.toml found (need one with the Nord slots)."; exit 1; }
+  read -ra cols <<< "${THEMES[$name]}"
+  /bin/cp -f "$base" "$DEST"
+  for i in 0 1 2 3 4 5; do
+    sed -i "s/#${SLOTS[$i]}/#${cols[$i]}/g" "$DEST"
+  done
+  printf '\033[32mApplied "%s" palette to %s\033[0m\n' "$name" "$DEST"
+  echo "Open a new prompt/tab to see it."
+}
+
+main() {
+  local choice="${1:-}"
+  case "$choice" in
+    list|-l|--list) list_themes; exit 0 ;;
+    "" )
+      if command -v fzf >/dev/null 2>&1; then
+        choice="$(printf '%s\n' "${ORDER[@]}" | fzf --prompt='Pick a palette: ' --height=40% --reverse)" || exit 0
+      else
+        echo "Pick a palette:"; select choice in "${ORDER[@]}"; do [ -n "$choice" ] && break; done
+      fi
+      [ -n "$choice" ] && apply_theme "$choice"
+      ;;
+    * ) apply_theme "$choice" ;;
+  esac
+}
+main "$@"

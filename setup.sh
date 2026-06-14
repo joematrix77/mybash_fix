@@ -291,6 +291,16 @@ configure_terminal_font() {
     fi
 }
 
+# Install the starship-theme palette switcher onto PATH.
+install_theme_picker() {
+    if [ -f "$MYBASHDIR/starship-theme" ]; then
+        mkdir -p "$HOME/.local/bin"
+        chmod +x "$MYBASHDIR/starship-theme" 2>/dev/null || true
+        ln -svf "$MYBASHDIR/starship-theme" "$HOME/.local/bin/starship-theme"
+        print_colored "$GREEN" "Installed 'starship-theme' palette switcher to ~/.local/bin"
+    fi
+}
+
 # Main execution
 check_not_root
 setup_directories
@@ -301,6 +311,7 @@ install_starship_and_fzf
 install_zoxide
 link_config
 configure_terminal_font
+install_theme_picker
 
 print_colored "$GREEN" "Done! FULLY QUIT your terminal (close all windows) and reopen it"
 print_colored "$GREEN" "so the new font and shell config take effect."
