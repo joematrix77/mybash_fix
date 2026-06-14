@@ -175,13 +175,38 @@ remove_linuxtoolbox() {
     fi
 }
 
+# Argument parsing
+KEEP_DEPS=0
+for arg in "$@"; do
+    case "$arg" in
+        --keep-deps) KEEP_DEPS=1 ;;
+        -h|--help)
+            echo "Usage: ./uninstall.sh [--keep-deps]"
+            echo
+            echo "  --keep-deps  Keep installed software (system packages, fonts,"
+            echo "               Starship, fzf, zoxide). Only remove the mybash config,"
+            echo "               the starship-theme command, reset the terminal font,"
+            echo "               and delete the ~/linuxtoolbox clone."
+            exit 0
+            ;;
+        *)
+            print_colored "$RED" "Unknown option: $arg (try --help)"
+            exit 1
+            ;;
+    esac
+done
+
 # Main execution
-determine_package_manager
-determine_sudo_command
-uninstall_dependencies
-uninstall_font
-uninstall_starship_and_fzf
-uninstall_zoxide
+if [ "$KEEP_DEPS" -eq 0 ]; then
+    determine_package_manager
+    determine_sudo_command
+    uninstall_dependencies
+    uninstall_font
+    uninstall_starship_and_fzf
+    uninstall_zoxide
+else
+    print_colored "$YELLOW" "--keep-deps: keeping packages, fonts, Starship, fzf, and zoxide."
+fi
 remove_configs
 reset_terminal_font
 remove_linuxtoolbox

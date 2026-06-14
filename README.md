@@ -119,10 +119,11 @@ To uninstall the `.bashrc` configuration, run:
 ```sh
 cd mybash_fix
 chmod +x uninstall.sh
-./uninstall.sh
+./uninstall.sh                # full removal
+./uninstall.sh --keep-deps    # remove only mybash config, keep installed software
 ```
 
-The `uninstall.sh` script reverses everything `setup.sh` does:
+By default `uninstall.sh` reverses everything `setup.sh` does:
 
 - Removes installed dependencies, fonts (JetBrainsMono), Starship, fzf, zoxide
 - **Restores your original `~/.bashrc`** from the timestamped backup and removes
@@ -132,6 +133,11 @@ The `uninstall.sh` script reverses everything `setup.sh` does:
   command
 - **Resets your terminal font** (Ptyxis / GNOME Terminal) back to the system font
 - Deletes the `~/linuxtoolbox` clone
+
+With **`--keep-deps`**, the package/font/Starship/fzf/zoxide removal is skipped —
+handy if you installed those tools for other reasons and only want the mybash
+configuration gone. Everything else (config restore, theme picker, font reset,
+clone removal) still runs.
 
 After running the script, restart your shell to apply the changes.
 
